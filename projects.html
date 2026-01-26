@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barangay Paralaya</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+
+  <header>
+    <nav>
+      <img src="img/logo.png" alt="community logo">
+      <div class="header-text">
+        <h2></h2>
+        <div class="nav-links">
+          <a href="index.html">Home</a> |
+          <a href="officials.html">Officials</a> |
+          <a href="projects.html">Projects</a> |
+          <a href="facilities.html">Facilities</a> |
+          <a href="announcements.html">Announcements</a>
+        </div>
+      </div>  
+    </nav>
+  </header>
+
+  <main id="maincontent">
+    <section id="projects">
+      <h2>Projects</h2>
+
+      <form>
+        <label for="search">Search projects:</label>
+        <input type="search" id="search" name="search">
+
+        <label for="status">Status:</label>
+            <select id="status" name="status">
+              <option value="">All</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="completed">Completed</option>
+            </select>
+
+
+        <label for="year">Year:</label>
+          <select id="year">
+            <option value="">All</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+          </select>
+
+
+       <!-- <button type="button">add project</button>-->
+      </form>
+      
+
+      <section aria-label="project list" id="projList">
+
+         <!--Barangay Park-->
+        <article class="fadeItem"
+        data-title="Barangay Park"
+        data-status="ongoing"
+        data-progress="40"
+        data-desc="The Barangay Park is an ongoing project designed to create a recreational hub for the local community. 
+              With 40% of the work completed, the project is currently focused on laying the groundwork for key features such as a children's play area, walking paths, and landscaped green spaces. 
+              Once finished, the park will offer a safe and accessible environment for residents of all ages to enjoy outdoor activities and foster a stronger sense of community."
+        data-img="img/projects/brgy park.jpg"
+        data-start="February 2025"
+        data-end="November 2025"
+        data-budget="₱150,000"
+        data-location="Zone 2, Barangay Paralaya (near Barangay Hall)"
+        data-led="Barangay Council and Sangguniang Kabataan"
+        data-impact="Will serve as a safe, accessible recreational space for residents of all ages, encourage physical activity, 
+        and foster stronger community connections and youth engagement.">
+
+
+          <h3>Barangay Park</h3>
+          <p>Status: Ongoing</p>
+           <div class="progress" style="height: 15px; width: 50%;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">40%</div>
+            </div>
+          <div class="project-description mt-2">
+                <img src="img/projects/brgy park.jpg" alt="barangay park" width="40%">
+            <p>The Barangay Park is an ongoing project designed to create a recreational hub for the local community. 
+              With 40% of the work completed, the project is currently focused on laying the groundwork for key features such as a children's play area, walking paths, and landscaped green spaces. 
+              Once finished, the park will offer a safe and accessible environment for residents of all ages to enjoy outdoor activities and foster a stronger sense of community.
+            </p>
+           </div>
+             <button class="btn btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#projModal">View Details</button>
+            </article>
+    
+        
+        <article class="fadeItem"
+          data-title="Paralaya Estero Cleanup"
+          data-status="ongoing"
+          data-progress="60"
+          data-desc="The Paralaya Estero Cleanup Drive is an ongoing community-led initiative aimed at rehabilitating and restoring the paralaya waterway. 
+              This project focuses on removing plastic waste, debris, and other pollutants to improve the water quality and surrounding ecosystem. 
+              The efforts are driven by local residents and volunteers, with a current progress of 60% completion. 
+              The ultimate goal is to create a healthier, cleaner environment for the community and local marine life, 
+              transforming the estero from a polluted channel into a vibrant and sustainable part of the local environment."
+          data-img="img/projects/estero cleanup.jpg" 
+          data-start="January 2025"
+          data-end="June 2025"
+          data-budget="₱120,000"
+          data-location="Zone 1, Barangay Paralaya"
+          data-led="Barangay Officials and Volunteers"
+          data-impact="Will improve water flow and reduce flooding for 80 households.">
+
+          <h3>Paralaya Estero Cleanup</h3>
+          <p>Status: Ongoing</p>
+
+             <div class="progress" style="height:14px;width:50%;">
+               <div class="progress-bar bg-success" role="progressbar"
+           style="width:0%;" aria-valuenow="60"
+           aria-valuemin="0" aria-valuemax="100">60%</div>
+             </div>
+
+    <div class="project-description mt-2">
+      <img src="img/projects/estero cleanup.jpg" alt="estero cleanup" width="40%">
+            <p>The Paralaya Estero Cleanup Drive is an ongoing community-led initiative aimed at rehabilitating and restoring the paralaya waterway. 
+              This project focuses on removing plastic waste, debris, and other pollutants to improve the water quality and surrounding ecosystem. 
+              The efforts are driven by local residents and volunteers, with a current progress of 60% completion. 
+              The ultimate goal is to create a healthier, cleaner environment for the community and local marine life, 
+              transforming the estero from a polluted channel into a vibrant and sustainable part of the local environment.
+            </p>
+           </div>
+
+    <button class="btn btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#projModal">View Details</button>
+      </article>
+
+      <!--Community Garden-->
+       <article class="fadeItem"
+          data-title="Brgy. Paralaya Community Garden"
+          data-status="Completed"
+          data-progress="100"
+          data-desc="  The Brgy. Paralaya Community Garden is a successfully completed initiative that transformed a formerly unused lot into a lush, productive green space. 
+              This project, now at 100% completion, provides residents with a shared area for growing vegetables and herbs. 
+              The garden not only promotes food sustainability within the community but also serves as a hub for local engagement and education on urban farming" 
+         data-img="img/projects/community garden.jpg"
+         data-start="March 2024"
+          data-end="September 2024"
+          data-budget="₱85,000"
+          data-location="Zone 3, Barangay Paralaya"
+          data-led="Barangay Agriculture Committee and Youth Volunteers"
+          data-impact="Provides a sustainable source of fresh produce for 40+ households, promotes environmental awareness, 
+          and strengthens community cooperation through shared urban farming efforts">
+
+
+          <h3>Brgy. Paralaya Community Garden</h3>
+          <p>Status: Completed</p>
+              <div class="progress" style="height: 15px; width: 50%;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+                  </div>
+              <div class="project-description mt-2">
+                <img src="img/projects/community garden.jpg" alt="community garden" width="40%">
+            <p>
+              The Brgy. Paralaya Community Garden is a successfully completed initiative that transformed a formerly unused lot into a lush, productive green space. 
+              This project, now at 100% completion, provides residents with a shared area for growing vegetables and herbs. 
+              The garden not only promotes food sustainability within the community but also serves as a hub for local engagement and education on urban farming.
+            </p>
+           </div>
+                   <button class="btn btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#projModal">View Details</button>
+        </article>
+         </section>
+          <p id="noRes" class="text-center mt-3 text-muted d-none">No results found</p>
+    </section>
+        
+    
+
+   <!--
+    <section id="project-detail">
+      <h2>Project Detail</h2>
+      <p><strong>Start Date:</strong> 01/01/2025</p>
+      <p><strong>End Date:</strong> 01/01/2026</p>
+      <p><strong>Budget:</strong> 100,000</p>
+
+      <h3>Project Photos</h3>
+      <img src="img/projects/estero cleanup.jpg" alt="project photo 1" width="150" height="150">
+      <img src="img/projects/community garden.jpg" alt="project photo 2" width="150" height="150">
+      <img src="img/projects/brgy park.jpg" alt="project photo 3" width="150" height="150">
+      <button type="button">upload photo</button>
+
+      <p>Notes:</p>
+      <textarea rows="4" cols="50"></textarea>
+
+      <div>
+        <button type="button">edit</button>
+        <button type="button">update</button>
+        <button type="button">upload</button>
+      </div>
+    </section>
+    -->
+
+          
+            
+        <div class="modal fade" id="projModal" tabindex="-1" aria-labelledby="projModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="projModalLabel">Project Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <div class="modal-body" id="projModalBody">
+                <img src="" alt="project image" class="img-fluid rounded mb-3 d-block mx-auto" style="max-height:250px;object-fit:cover;">
+                
+                <div class="text-center mb-2">
+                  <div class="progress mx-auto" style="height:18px;width:70%;">
+                    <div class="progress-bar bg-success" id="modalProg" role="progressbar"
+                        style="width:0%;" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+
+                <div class="proj-info text-start">
+                  <p><strong>Status:</strong> <span id="mStatus"></span></p>
+                  <p><strong>Start Date:</strong> <span id="mStart"></span></p>
+                  <p><strong>Target Completion:</strong> <span id="mEnd"></span></p>
+                  <p><strong>Budget:</strong> <span id="mBudget"></span></p>
+                  <p><strong>Location:</strong> <span id="mLoc"></span></p>
+                  <p><strong>Led by:</strong> <span id="mLed"></span></p>
+                  <hr>
+                  <p id="mDesc"></p>
+                  <p><strong>Impact:</strong> <span id="mImpact"></span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+  </main>
+
+ 
+<footer>
+  <nav>
+    <a href="about.html">Operating Hours</a> |
+    <a href="about.html">Address</a> |
+    <a href="about.html">Email</a> |
+    <a href="about.html">Emergency Contact</a> |
+    <a href="about.html">About</a>
+  </nav>
+</footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/projects.js"></script>
+
+
+</body>
+</html>
+
+
+</body>
+</html>

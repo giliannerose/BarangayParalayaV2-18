@@ -1,0 +1,62 @@
+[
+  {
+    "title": "Public Health Advisory (Dengue Prevention)",
+    "month": "september",
+    "cat": "health",
+    "date": "2025-09-18",
+    "text": "To prevent dengue outbreak, please maintain cleanliness and remove stagnant water in your surroundings.",
+    "details": "The Barangay Health Office advises residents to conduct weekly cleaning drives. Cover water containers, apply mosquito repellents, and immediately report fever symptoms lasting more than 2 days. Health officers will be conducting random inspections to ensure compliance.",
+    "img": "img/announcements/dengueannouncements.png",
+    "postedBy": "Barangay Health Unit"
+  },
+  {
+    "title": "Pet Vaccination Schedule",
+    "month": "september",
+    "cat": "health",
+    "date": "2025-09-10",
+    "text": "Free pet vaccination on September 15 at the barangay covered court.",
+    "details": "All residents are encouraged to bring their pets for free anti-rabies and 5-in-1 vaccination. Pet owners should bring valid ID and their pet’s record card. The event will start at 8:00 AM and end at 12:00 NN.",
+    "img": "img/announcements/petvaccinatinon.png",
+    "postedBy": "Municipal Veterinary Office"
+  },
+  {
+    "title": "Volunteer for Park Construction",
+    "month": "august",
+    "cat": "community",
+    "date": "2025-08-22",
+    "text": "Join our clean and green initiative! Volunteers needed to assist in building our community park.",
+    "details": "We are calling for volunteers to help in planting trees, installing benches, and cleaning the designated park area. Lunch and snacks will be provided. Please wear comfortable clothing and bring your own gloves and water bottles.",
+    "img": "img/announcements/parkconstruction.png",
+    "postedBy": "Barangay Council"
+  },
+  {
+    "title": "Fiesta House Decoration Contest",
+    "month": "august",
+    "cat": "community",
+    "date": "2025-08-01",
+    "text": "Celebrate this year's fiesta by decorating your home! The most festive house wins exciting prizes.",
+    "details": "Residents are encouraged to decorate their homes with lights, banners, and festive ornaments. Judging will be done on August 27, 7:00 PM. Winners will receive grocery packages and recognition during the fiesta night program.",
+    "img": "img/announcements/fiesta.png",
+    "postedBy": "Barangay Fiesta Committee"
+  },
+  {
+    "title": "Community Meeting Notice",
+    "month": "july",
+    "cat": "community",
+    "date": "2025-07-14",
+    "text": "All residents are invited to attend the community meeting at 3PM in the covered court.",
+    "details": "The meeting will discuss upcoming barangay projects, safety protocols, and the implementation of new waste segregation policies. Attendance is highly encouraged, as residents’ input is vital for community planning.",
+    "img": "img/announcements/communityMeeting.png",
+    "postedBy": "Barangay Captain’s Office"
+  },
+  {
+    "title": "Public Safety and Curfew Advisory",
+    "month": "july",
+    "cat": "safety",
+    "date": "2025-07-03",
+    "text": "Curfew hours are strictly enforced from 10PM to 4AM. Let’s cooperate for a safe and peaceful community.",
+    "details": "Minors caught violating curfew will be escorted home by barangay patrol. Parents will be notified immediately. Please avoid unnecessary gatherings late at night to maintain peace and order.",
+    "img": "img/announcements/curfew.png",
+    "postedBy": "Barangay Public Safety Office"
+  }
+]
