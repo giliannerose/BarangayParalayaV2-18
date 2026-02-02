@@ -29,12 +29,48 @@ const announcementSchema = new mongoose.Schema({
   postedBy: String,
   img: String,
 
-  // for API integration later (MS1)
+  // for API integration  (MS1)
   apiSource: String,
   externalId: String
 }, { timestamps: true });
 
 const Announcement = mongoose.model("Announcement", announcementSchema);
+
+
+
+// Facility Schema (MS1)
+const facilitySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: String,
+  category: { type: String, enum: ["indoor", "outdoor"] },
+  capacity: Number,
+  operatingHours: String,
+  managedBy: String,
+  features: [String],
+  image: String,
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
+
+const Facility = mongoose.model("Facility", facilitySchema);
+
+// Booking Schema (MS1)
+const bookingSchema = new mongoose.Schema({
+  facilityId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Facility",
+    required: true
+  },
+  fullName: String,
+  email: String,
+  contactNumber: String,
+  date: String,
+  time: String,
+  purpose: String,
+  status: { type: String, default: "pending" }
+}, { timestamps: true });
+
+const Booking = mongoose.model("Booking", bookingSchema);
+
 
 // CRUD ROUTES
 
@@ -82,4 +118,77 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+});
+
+// facilities CRUD
+//create facilities
+app.post("/api/facilities", async (req, res) => {
+  try {
+    const facility = await Facility.create(req.body);
+    res.status(201).json(facility);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+//get facilities
+app.get("/api/facilities", async (req, res) => {
+  const facilities = await Facility.find({ isActive: true });
+  res.json(facilities);
+});
+
+//update facilities
+app.put("/api/facilities/:id", async (req, res) => {
+  const updated = await Facility.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(updated);
+});
+
+
+//delete facilities
+app.delete("/api/facilities/:id", async (req, res) => {
+  await Facility.findByIdAndDelete(req.params.id);
+  res.json({ message: "Facility deleted" });
+});
+
+//booking CRUD
+
+//create
+app.post("/api/bookings", async (req, res) => {
+  try {
+    const booking = await Booking.create(req.body);
+    res.status(201).json(booking);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+//read
+app.get("/api/bookings", async (req, res) => {
+  const bookings = await Booking.find().populate("facilityId");
+  res.json(bookings);
+});
+
+// UPDATE booking status (approve / reject)
+app.put("/api/bookings/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!["pending", "approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const updated = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
