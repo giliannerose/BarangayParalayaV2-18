@@ -36,7 +36,7 @@ const announcementSchema = new mongoose.Schema({
 
 const Announcement = mongoose.model("Announcement", announcementSchema);
 
-
+// Schema
 
 // Facility Schema (MS1)
 const facilitySchema = new mongoose.Schema({
@@ -71,9 +71,38 @@ const bookingSchema = new mongoose.Schema({
 
 const Booking = mongoose.model("Booking", bookingSchema);
 
+// Projects Schema 
+const projectSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: String,
+  status: {
+    type: String,
+    enum: ["ongoing", "completed"],
+    required: true
+  },
+  progress: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0
+  },
+  image: String, 
+  startDate: String, 
+  endDate: String,
+  budget: String,
+  location: String,
+  ledBy: String,
+  impact: String,
+  year: String 
+}, { timestamps: true });
+
+const Project = mongoose.model("Project", projectSchema);
+
+
 
 // CRUD ROUTES
 
+// Announcements // 
 // CREATE
 app.post("/api/announcements", async (req, res) => {
   try {
@@ -191,4 +220,43 @@ app.put("/api/bookings/:id/status", async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+});
+
+//Projects CRUD
+// CREATE project
+app.post("/api/projects", async (req, res) => {
+  try {
+    const project = await Project.create(req.body);
+    res.status(201).json(project);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// READ all projects
+app.get("/api/projects", async (req, res) => {
+  const projects = await Project.find().sort({ createdAt: -1 });
+  res.json(projects);
+});
+
+// READ single project
+app.get("/api/projects/:id", async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  res.json(project);
+});
+
+// UPDATE project
+app.put("/api/projects/:id", async (req, res) => {
+  const updated = await Project.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(updated);
+});
+
+// DELETE project
+app.delete("/api/projects/:id", async (req, res) => {
+  await Project.findByIdAndDelete(req.params.id);
+  res.json({ message: "Project deleted" });
 });
