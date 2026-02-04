@@ -13,21 +13,22 @@ document.addEventListener("DOMContentLoaded", () => {
   let newsData = [];
   let filteredNews = [];
 
-  // json
-  fetch("data/announcements.json")
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to load announcements");
-      return res.json();
-    })
-    .then((data) => {
-      newsData = data;
-      filteredNews = [...newsData];
-      renderAnnouncements(filteredNews);
-    })
-    .catch((err) => {
-      listArea.innerHTML = `<p class="text-danger text-center mt-3">Error loading announcements.</p>`;
-      console.error(err);
-    });
+ 
+  fetch("/api/announcements")
+  .then(res => {
+    if (!res.ok) throw new Error("Failed to load announcements");
+    return res.json();
+  })
+  .then(data => {
+    newsData = data;
+    filteredNews = [...newsData];
+    renderAnnouncements(filteredNews);
+  })
+  .catch(err => {
+    listArea.innerHTML = `<p class="text-danger text-center mt-3">Error loading announcements.</p>`;
+    console.error(err);
+  });
+
 
   function renderAnnouncements(arr) {
     listArea.innerHTML = "";
@@ -72,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const catVal = catSelect.value;
     let res = newsData.filter(
       (n) =>
-        (n.month.includes(searchVal) || searchVal === "") &&
+        (n.month.toLowerCase().includes(searchVal) || searchVal === "") &&
         (catVal === "all" || n.cat === catVal)
     );
 
@@ -96,8 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
       monthTabs.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       const m = btn.dataset.month;
-      filteredNews =
-        m === "all" ? newsData : newsData.filter((x) => x.month === m);
+            filteredNews =
+              m === "all"
+                ? newsData
+                : newsData.filter(
+                    (x) => x.month?.toLowerCase().trim() === m
+            );
       renderAnnouncements(filteredNews);
     });
   });

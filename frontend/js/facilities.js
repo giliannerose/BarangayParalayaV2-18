@@ -10,65 +10,10 @@ document.addEventListener("DOMContentLoaded", function() {
   const openBook = document.getElementById("openBook");
   const bookFromModal = document.getElementById("bookFromModal");
   const formBook = document.getElementById("frmBook");
-  const cards = document.querySelectorAll(".facility-card");
+  const facilityGrid = document.getElementById("facilityGrid");
+  const facilitySelect = document.getElementById("bookFac");
 
-  //  facilities desc 
-        const facInfo = {
-        "Function Hall": {
-            desc: "A spacious enclosed venue for gatherings, seminars, and private celebrations. Includes chairs, tables, and a basic sound system.",
-            img: "img/facilities/function hall.jpg",
-            led: "Led by Barangay Admin Office",
-            capacity: "Up to 150 people",
-            hours: "8:00 AM – 10:00 PM",
-            features: [
-            "Tables and chairs",
-            "Podium and sound system",
-            "Ceiling fans and ventilation",
-            "Comfort rooms",
-            "Stage area",
-            "Electrical outlets"
-            ]
-        },
-        "Sports Complex": {
-            desc: "A covered court ideal for basketball, volleyball, and other community events. Also used for barangay-wide assemblies and outreach programs.",
-            img: "img/facilities/basketballcourt4.jpg",
-            led: "Led by Youth Council",
-            capacity: "Up to 300 people",
-            hours: "6:00 AM – 9:00 PM",
-            features: [
-            "Covered basketball court",
-            "Bleacher seating",
-            "Lighting system for night use",
-            "Sound system setup area"
-            ]
-        },
-        "Health Center": {
-            desc: "Provides free consultations, first aid, and preventive health services for residents. Staffed by barangay health workers and visiting nurses.",
-            img: "img/facilities/clinic.jpg",
-            led: "Led by Barangay Health Workers",
-            capacity: "10 patients at a time",
-            hours: "8:00 AM – 5:00 PM",
-            features: [
-            "Consultation room",
-            "Treatment area",
-            "Waiting area",
-            "Pharmacy counter"
-            ]
-        },
-        "Library/Study Area": {
-            desc: "A quiet place for students and residents to study or access reference materials. Occasionally used for literacy programs and workshops.",
-            img: "img/facilities/library.jpg",
-            led: "Led by Barangay Education Committee",
-            capacity: "Up to 40 people",
-            hours: "9:00 AM – 6:00 PM",
-            features: [
-            "Study tables and chairs",
-            "Wi-Fi access",
-            "Community reference books",
-            "Air-conditioned room"
-            ]
-        }
-        };
+    
 
 
   // detailsmodal
@@ -109,52 +54,173 @@ document.addEventListener("DOMContentLoaded", function() {
     modBook.show();
   });
 
-  formBook.addEventListener("submit", function(ev) {
-    ev.preventDefault();
+  formBook.addEventListener("submit", async function (ev) {
+  ev.preventDefault();
 
-    let dataArr = JSON.parse(localStorage.getItem("bookingsList") || "[]");
-    const info = {
-        nm: document.getElementById("userNm").value.trim(),
-        mail: document.getElementById("userMail").value.trim(),
-        num: document.getElementById("userNum").value.trim(),
-        fac: document.getElementById("bookFac").value,
-        date: document.getElementById("bookDate").value,
-        time: document.getElementById("bookTime").value,
-        why: document.getElementById("bookReason").value.trim()
+  const payload = {
+    facilityId: document.getElementById("bookFac").dataset.id,
+    fullName: document.getElementById("userNm").value.trim(),
+    email: document.getElementById("userMail").value.trim(),
+    contactNumber: document.getElementById("userNum").value.trim(),
+    date: document.getElementById("bookDate").value,
+    time: document.getElementById("bookTime").value,
+    purpose: document.getElementById("bookReason").value.trim()
   };
 
+  try {
+    const res = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-    dataArr.push(info);
-    localStorage.setItem("bookingsList", JSON.stringify(dataArr));
+    if (!res.ok) throw new Error("Request failed");
+
     modBook.hide();
     toastMsg.show();
     formBook.reset();
-  });
+
+  } catch (err) {
+    alert("Failed to save booking");
+    console.error(err);
+  }
+});
+
 
   // search
-  srchFld.addEventListener("input", function() {
-    let term = srchFld.value.toLowerCase();
-    cards.forEach(c => {
-      let nm = c.dataset.name.toLowerCase();
-      c.style.display = nm.includes(term) ? "block" : "none";
+  srchFld.addEventListener("input", function () {
+  const term = srchFld.value.toLowerCase();
+  const cards = document.querySelectorAll(".facility-card");
+
+  cards.forEach(card => {
+    const name = card.dataset.name.toLowerCase();
+    card.style.display = name.includes(term) ? "block" : "none";
+  });
+});
+
+ sortOpt.addEventListener("change", function () {
+  const chosen = sortOpt.value;
+  const cards = document.querySelectorAll(".facility-card");
+
+  cards.forEach(card => {
+    if (chosen === "all" || card.dataset.cat === chosen) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+  });
+});
+
+
+
+  resetBtn.addEventListener("click", function () {
+  srchFld.value = "";
+  sortOpt.value = "all";
+
+  const cards = document.querySelectorAll(".facility-card");
+  cards.forEach(card => card.style.display = "block");
+});
+
+
+  async function loadFacilities() {
+  try {
+    const res = await fetch("/api/facilities");
+    const facilities = await res.json();
+
+    facilityGrid.innerHTML = "";
+    facilitySelect.innerHTML = `<option value="">Select a facility</option>`;
+
+    facilities.forEach(fac => {
+      // Create facility card
+      const card = document.createElement("article");
+      card.className = "facility-card";
+      card.dataset.cat = fac.category;
+      card.dataset.name = fac.name;
+
+      card.innerHTML = `
+        <h4>${fac.name}</h4>
+        <figure>
+          <img src="${fac.image}" alt="${fac.name}">
+        </figure>
+        <button type="button" class="view-btn">view details</button>
+      `;
+
+      // View details click
+      card.querySelector(".view-btn").addEventListener("click", () => {
+        showFacilityDetails(fac);
+      });
+
+      facilityGrid.appendChild(card);
+
+      // Add to booking dropdown
+      const opt = document.createElement("option");
+      opt.textContent = fac.name;
+      opt.value = fac.name;
+      opt.dataset.id = fac._id; // IMPORTANT
+      facilitySelect.appendChild(opt);
     });
+
+  } catch (err) {
+    console.error("Error loading facilities:", err);
+  }
+}
+
+function showFacilityDetails(f) {
+  document.getElementById("facTitle").textContent = f.name;
+  document.getElementById("facImg").src = f.image;
+  document.getElementById("facDesc").textContent = f.description;
+  document.getElementById("facCap").textContent = f.capacity;
+  document.getElementById("facTime").textContent = f.operatingHours;
+  document.getElementById("facLed").textContent = f.managedBy;
+
+  const list = document.getElementById("facFeatures");
+  list.innerHTML = "";
+  (f.features || []).forEach(feat => {
+    const li = document.createElement("li");
+    li.textContent = "• " + feat;
+    list.appendChild(li);
   });
 
-  sortOpt.addEventListener("change", function() {
-    let chosen = sortOpt.value;
-    cards.forEach(c => {
-      if (chosen === "all" || c.dataset.cat === chosen) {
-        c.style.display = "block";
-      } else {
-        c.style.display = "none";
-      }
+  modFac.show();
+}
+
+facilitySelect.addEventListener("change", function () {
+  const selected = this.options[this.selectedIndex];
+  this.dataset.id = selected.dataset.id;
+});
+
+loadFacilities();
+
+async function loadBookings() {
+  try {
+    const res = await fetch("/api/bookings");
+    const bookings = await res.json();
+
+    const tbody = document.getElementById("bookingTableBody");
+    tbody.innerHTML = "";
+
+    bookings.forEach(b => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${b.facilityId?.name || "N/A"}</td>
+        <td>${b.fullName}</td>
+        <td>${b.date}</td>
+        <td>${b.time}</td>
+        <td>${b.purpose}</td>
+        <td>${b.status}</td>
+      `;
+
+      tbody.appendChild(tr);
     });
-  });
+
+  } catch (err) {
+    console.error("Failed to load bookings", err);
+  }
+}
+
+loadBookings();
 
 
-  resetBtn.addEventListener("click", function() {
-    srchFld.value = "";
-    sortOpt.value = "all";
-    cards.forEach(c => (c.style.display = "block"));
-  });
+
 });
