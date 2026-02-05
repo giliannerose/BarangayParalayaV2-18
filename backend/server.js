@@ -98,6 +98,20 @@ const projectSchema = new mongoose.Schema({
 
 const Project = mongoose.model("Project", projectSchema);
 
+// Officials Schema 
+const officialSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  position: { type: String, required: true },
+  term: String,
+  description: String,
+  advocacy: String,
+  contactInfo: String,
+  image: String,
+  order: { type: Number, default: 0 }
+}, { timestamps: true });
+
+const Official = mongoose.model("Official", officialSchema);
+
 
 
 // CRUD ROUTES
@@ -260,3 +274,56 @@ app.delete("/api/projects/:id", async (req, res) => {
   await Project.findByIdAndDelete(req.params.id);
   res.json({ message: "Project deleted" });
 });
+
+//OFFICIALS
+
+// create officials
+app.post("/api/officials", async (req, res) => {
+  try {
+    const official = await Official.create(req.body);
+    res.status(201).json(official);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
+//read all officials
+app.get("/api/officials", async (req, res) => {
+  const officials = await Official.find().sort({ order: 1 });
+  res.json(officials);
+});
+
+
+// read single officials
+app.get("/api/officials/:id", async (req, res) => {
+  const official = await Official.findById(req.params.id);
+  res.json(official);
+});
+
+//update officials
+app.put("/api/officials/:id", async (req, res) => {
+  try {
+    const updated = await Official.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Official not found" });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
+//delete officials
+app.delete("/api/officials/:id", async (req, res) => {
+  await Official.findByIdAndDelete(req.params.id);
+  res.json({ message: "Official deleted" });
+});
+

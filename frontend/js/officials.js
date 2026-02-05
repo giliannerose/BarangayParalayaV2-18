@@ -1,39 +1,43 @@
+document.addEventListener("DOMContentLoaded", fetchOfficials);
 
-document.addEventListener('DOMContentLoaded', function () {
-  const cardz = document.querySelectorAll('.officialcard');
-  const modalBody = document.getElementById('modalContent');
-  const modalTitle = document.getElementById('officialModalLabel');
+async function fetchOfficials() {
+  const res = await fetch("http://localhost:3000/api/officials");
+  const officials = await res.json();
+  renderOfficials(officials);
+}
 
-  cardz.forEach((card) => {
-    card.addEventListener('click', function () {
-      const name = this.querySelector('h3').textContent;
-      const position = this.querySelector('p').textContent;
-      const imgSrc = this.querySelector('img').src;
+function renderOfficials(officials) {
+  const grid = document.getElementById("officialsGrid");
+  grid.innerHTML = "";
 
-      modalTitle.textContent = name;
-      modalBody.innerHTML = `
-        <img src="${imgSrc}" alt="${name}">
-        <h6>${position}</h6>
-      `;
-    
+  officials.forEach(o => {
+    const card = document.createElement("article");
+    card.className = "officialcard";
 
-                  const term = this.dataset.term || "—";
-                  const description = this.dataset.desc || "";
-                  const advocacy = this.dataset.advocacy || "";
-                  const contactinfo = this.dataset.contactinfo || "";
+    card.innerHTML = `
+      <img src="${o.image}" alt="${o.name}">
+      <h3>${o.name}</h3>
+      <p>Position: ${o.position}</p>
+    `;
 
-                      modalBody.innerHTML = `
-                        <img src="${imgSrc}" alt="${name}">
-                        <h6> ${position}</h6>
-                        <p><strong>Term:</strong> ${term}</p>
-                        <p> ${description}</p>
-                        <p><strong>Advocacy:</strong> ${advocacy}</p>
-                        <p><strong>Contact Info:</strong> ${contactinfo}</p>
-                      `;
-
-const openModal = new bootstrap.Modal(document.getElementById('officialModal'));
-      openModal.show();
-
-    });
+    card.addEventListener("click", () => openModal(o));
+    grid.appendChild(card);
   });
-});
+}
+
+function openModal(o) {
+  document.getElementById("officialModalLabel").textContent = o.name;
+
+  document.getElementById("modalContent").innerHTML = `
+    <img src="${o.image}" alt="${o.name}">
+    <h6>${o.position}</h6>
+    <p><strong>Term:</strong> ${o.term || "—"}</p>
+    <p>${o.description || ""}</p>
+    <p><strong>Advocacy:</strong> ${o.advocacy || ""}</p>
+    <p><strong>Contact Info:</strong> ${o.contactInfo || ""}</p>
+  `;
+
+  new bootstrap.Modal(
+    document.getElementById("officialModal")
+  ).show();
+}
