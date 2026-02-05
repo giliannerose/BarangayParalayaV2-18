@@ -112,6 +112,34 @@ const officialSchema = new mongoose.Schema({
 
 const Official = mongoose.model("Official", officialSchema);
 
+//About Schema
+const aboutSchema = new mongoose.Schema({
+  aboutText: String,
+  vision: String,
+  mission: String,
+
+  goals: [String],
+
+  emergencyContacts: {
+    barangayHall: String,
+    police: String,
+    fire: String,
+    healthCenter: String,
+    rescue: String,
+    emergencyMedical: String
+  },
+
+  officeInfo: {
+    address: String,
+    email: String,
+    phone: String,
+    officeHours: String
+  }
+}, { timestamps: true });
+
+const About = mongoose.model("About", aboutSchema);
+
+
 
 
 // CRUD ROUTES
@@ -327,3 +355,75 @@ app.delete("/api/officials/:id", async (req, res) => {
   res.json({ message: "Official deleted" });
 });
 
+//About - Get
+
+app.get("/api/about", async (req, res) => {
+  try {
+    const about = await About.findOne();
+
+    // If no About document exists yet
+    if (!about) {
+      return res.status(404).json({ message: "About content not found" });
+    }
+
+    res.json(about);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ABOUT PAGE - CREATE 
+app.post("/api/about", async (req, res) => {
+  try {
+    // Prevent creating multiple About documents
+    const existing = await About.findOne();
+    if (existing) {
+      return res.status(400).json({
+        message: "About content already exists. Use PUT to update."
+      });
+    }
+
+    const created = await About.create(req.body);
+    res.status(201).json(created);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ABOUT PAGE - UPDATE
+app.put("/api/about", async (req, res) => {
+  try {
+    const updated = await About.findOneAndUpdate(
+      {},
+      req.body,
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        message: "About content not found. Create it first."
+      });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ABOUT PAGE - DELETE 
+app.delete("/api/about", async (req, res) => {
+  try {
+    const deleted = await About.findOneAndDelete();
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: "No About content to delete"
+      });
+    }
+
+    res.json({ message: "About content deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
