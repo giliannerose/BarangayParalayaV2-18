@@ -1295,3 +1295,13 @@ footer nav a:hover {
 #officialPreview .card-body {
   padding: 1rem;
 }
+
+
+.weather-card-outline{
+  max-width: 720px;
+  border: 1px solid rgba(25, 135, 84, 0.35);
+  border-radius: 10px;
+  background: #fff;
+}
+
+

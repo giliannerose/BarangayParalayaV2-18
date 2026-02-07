@@ -3,6 +3,8 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -139,6 +141,19 @@ const aboutSchema = new mongoose.Schema({
 
 const About = mongoose.model("About", aboutSchema);
 
+// Weather Snapshot Schema (MS API Integration)
+const weatherSnapshotSchema = new mongoose.Schema({
+  location: String,
+  latitude: Number,
+  longitude: Number,
+  temperature: Number,
+  windSpeed: Number,
+  precipitation: Number,
+  fetchedAt: Date,
+  apiSource: String
+}, { timestamps: true });
+
+const WeatherSnapshot = mongoose.model("WeatherSnapshot", weatherSnapshotSchema);
 
 
 
@@ -182,13 +197,59 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "Backend running" });
 });
 
+// External API: Weather (Open-Meteo) - FETCH LIVE DATA
+app.get("/api/external/weather", async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+
+    if (!lat || !lon) {
+      return res.status(400).json({ error: "lat and lon are required" });
+    }
+
+    const url =
+      `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${encodeURIComponent(lat)}` +
+      `&longitude=${encodeURIComponent(lon)}` +
+      `&current=temperature_2m,precipitation,wind_speed_10m` +
+      `&timezone=Asia%2FManila`;
+
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      return res.status(502).json({ error: "External API request failed" });
+    }
+
+    const data = await resp.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Weather Snapshots CRUD (save API data to DB)
+app.post("/api/weather-snapshots", async (req, res) => {
+  try {
+    const created = await WeatherSnapshot.create(req.body);
+    res.status(201).json(created);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get("/api/weather-snapshots", async (req, res) => {
+  const list = await WeatherSnapshot.find().sort({ createdAt: -1 });
+  res.json(list);
+});
+
+app.delete("/api/weather-snapshots/:id", async (req, res) => {
+  await WeatherSnapshot.findByIdAndDelete(req.params.id);
+  res.json({ message: "Snapshot deleted" });
+});
+
+
+
 // Frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
 });
 
 // facilities CRUD
@@ -426,4 +487,9 @@ app.delete("/api/about", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
