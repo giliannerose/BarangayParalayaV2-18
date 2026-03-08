@@ -5,6 +5,11 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const session = require("express-session");
+const jwt = require("jsonwebtoken");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +18,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend")));
+
+app.use(session({
+  secret: "sessionsecret",
+  resave: false,
+  saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // MongoDB Atlas connection
 mongoose.connect(process.env.MONGO_URI)
@@ -155,13 +169,148 @@ const weatherSnapshotSchema = new mongoose.Schema({
 
 const WeatherSnapshot = mongoose.model("WeatherSnapshot", weatherSnapshotSchema);
 
+// User Schema (Google OAuth users)
+
+const userSchema = new mongoose.Schema({
+  googleId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  name: String,
+
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  role: {
+    type: String,
+    default: "admin"
+  }
+
+}, { timestamps: true });
+
+const User = mongoose.model("User", userSchema);
+
+//
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "/auth/callback"
+},
+async (accessToken, refreshToken, profile, done) => {
+
+  try {
+
+    const email = profile.emails[0].value;
+
+     const allowedAdmins = [
+      "lr.grbaguio@mmdc.mcl.edu.ph",
+      "lr.arlegaspi@mmdc.mcl.edu.ph",
+      "lr.kdrsantos@mmdc.mcl.edu.ph",
+      "mpisonjr@mmdc.mcl.edu.ph"
+    ];
+
+     // check if email is allowed
+    if (!allowedAdmins.includes(email)) {
+      return done(null, false);
+    }
+
+    // check if user already exists
+    let user = await User.findOne({ googleId: profile.id });
+
+    if (!user) {
+
+      // create new user
+      user = await User.create({
+        googleId: profile.id,
+        name: profile.displayName,
+        email: profile.emails[0].value,
+        role: "admin"
+      });
+
+    }
+
+    return done(null, user);
+
+  } catch (err) {
+    return done(err, null);
+  }
+
+}));
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  const user = await User.findById(id);
+  done(null, user);
+});
+
+// GOOGLE LOGIN
+app.get("/auth/login",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+
+// GOOGLE CALLBACK
+app.get("/auth/callback",
+  passport.authenticate("google", {
+  failureRedirect: "/admin-login.html?error=unauthorized"
+}),
+  async (req, res) => {
+
+    const token = jwt.sign(
+      { id: req.user._id, email: req.user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // redirect to admin dashboard with token
+    res.redirect(`/admin/dashboard.html?token=${token}`);
+
+  }
+);
+
+
+// JWT AUTH MIDDLEWARE
+
+function authenticateToken(req, res, next) {
+
+  const authHeader = req.headers["authorization"];
+
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+
+    req.user = user;
+    next();
+
+  });
+
+}
+
 
 
 // CRUD ROUTES
 
 // Announcements // 
 // CREATE
-app.post("/api/announcements", async (req, res) => {
+app.post("/api/announcements", authenticateToken, async (req, res) => {
   try {
     const created = await Announcement.create(req.body);
     res.status(201).json(created);
@@ -177,7 +326,7 @@ app.get("/api/announcements", async (req, res) => {
 });
 
 // UPDATE
-app.put("/api/announcements/:id", async (req, res) => {
+app.put("/api/announcements/:id", authenticateToken, async (req, res) =>  {
   const updated = await Announcement.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -187,7 +336,7 @@ app.put("/api/announcements/:id", async (req, res) => {
 });
 
 // DELETE
-app.delete("/api/announcements/:id", async (req, res) => {
+app.delete("/api/announcements/:id", authenticateToken, async (req, res) => {
   await Announcement.findByIdAndDelete(req.params.id);
   res.json({ message: "Announcement deleted" });
 });
@@ -254,7 +403,7 @@ app.get("/", (req, res) => {
 
 // facilities CRUD
 //create facilities
-app.post("/api/facilities", async (req, res) => {
+app.post("/api/facilities", authenticateToken, async (req, res) => {
   try {
     const facility = await Facility.create(req.body);
     res.status(201).json(facility);
@@ -270,7 +419,7 @@ app.get("/api/facilities", async (req, res) => {
 });
 
 //update facilities
-app.put("/api/facilities/:id", async (req, res) => {
+app.put("/api/facilities/:id", authenticateToken, async (req, res) => {
   const updated = await Facility.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -281,7 +430,7 @@ app.put("/api/facilities/:id", async (req, res) => {
 
 
 //delete facilities
-app.delete("/api/facilities/:id", async (req, res) => {
+app.delete("/api/facilities/:id", authenticateToken, async (req, res) => {
   await Facility.findByIdAndDelete(req.params.id);
   res.json({ message: "Facility deleted" });
 });
@@ -305,7 +454,7 @@ app.get("/api/bookings", async (req, res) => {
 });
 
 // UPDATE booking status (approve / reject)
-app.put("/api/bookings/:id/status", async (req, res) => {
+app.put("/api/bookings/:id/status", authenticateToken, async (req, res) => {
   try {
     const { status } = req.body;
 
@@ -327,7 +476,7 @@ app.put("/api/bookings/:id/status", async (req, res) => {
 
 //Projects CRUD
 // CREATE project
-app.post("/api/projects", async (req, res) => {
+app.post("/api/projects", authenticateToken, async (req, res) => {
   try {
     const project = await Project.create(req.body);
     res.status(201).json(project);
@@ -349,7 +498,7 @@ app.get("/api/projects/:id", async (req, res) => {
 });
 
 // UPDATE project
-app.put("/api/projects/:id", async (req, res) => {
+app.put("/api/projects/:id", authenticateToken, async (req, res) => {
   const updated = await Project.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -359,7 +508,7 @@ app.put("/api/projects/:id", async (req, res) => {
 });
 
 // DELETE project
-app.delete("/api/projects/:id", async (req, res) => {
+app.delete("/api/projects/:id", authenticateToken, async (req, res) => {
   await Project.findByIdAndDelete(req.params.id);
   res.json({ message: "Project deleted" });
 });
@@ -367,7 +516,7 @@ app.delete("/api/projects/:id", async (req, res) => {
 //OFFICIALS
 
 // create officials
-app.post("/api/officials", async (req, res) => {
+app.post("/api/officials", authenticateToken, async (req, res) => {
   try {
     const official = await Official.create(req.body);
     res.status(201).json(official);
@@ -391,7 +540,7 @@ app.get("/api/officials/:id", async (req, res) => {
 });
 
 //update officials
-app.put("/api/officials/:id", async (req, res) => {
+app.put("/api/officials/:id", authenticateToken, async (req, res) => {
   try {
     const updated = await Official.findByIdAndUpdate(
       req.params.id,
@@ -411,7 +560,7 @@ app.put("/api/officials/:id", async (req, res) => {
 
 
 //delete officials
-app.delete("/api/officials/:id", async (req, res) => {
+app.delete("/api/officials/:id", authenticateToken, async (req, res) => {
   await Official.findByIdAndDelete(req.params.id);
   res.json({ message: "Official deleted" });
 });
@@ -434,7 +583,7 @@ app.get("/api/about", async (req, res) => {
 });
 
 // ABOUT PAGE - CREATE 
-app.post("/api/about", async (req, res) => {
+app.post("/api/about", authenticateToken, async (req, res) => {
   try {
     // Prevent creating multiple About documents
     const existing = await About.findOne();
@@ -452,7 +601,7 @@ app.post("/api/about", async (req, res) => {
 });
 
 // ABOUT PAGE - UPDATE
-app.put("/api/about", async (req, res) => {
+app.put("/api/about", authenticateToken, async (req, res) => {
   try {
     const updated = await About.findOneAndUpdate(
       {},
@@ -473,7 +622,7 @@ app.put("/api/about", async (req, res) => {
 });
 
 // ABOUT PAGE - DELETE 
-app.delete("/api/about", async (req, res) => {
+app.delete("/api/about", authenticateToken,  async (req, res) => {
   try {
     const deleted = await About.findOneAndDelete();
 
