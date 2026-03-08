@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let newsData = [];
   let filteredNews = [];
+  let activeMonth = "all";
 
  
   fetch("/api/announcements")
@@ -71,11 +72,24 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateView() {
     const searchVal = searchMonth.value.toLowerCase();
     const catVal = catSelect.value;
-    let res = newsData.filter(
-      (n) =>
-        (n.month.toLowerCase().includes(searchVal) || searchVal === "") &&
-        (catVal === "all" || n.cat === catVal)
-    );
+
+     let res = newsData.filter((n) => {
+
+    const monthMatch =
+      activeMonth === "all" ||
+      n.month?.toLowerCase().trim() === activeMonth;
+
+    const searchMatch =
+      (n.month || "").toLowerCase().includes(searchVal) || searchVal === "";
+
+    const catMatch =
+      catVal === "all" || n.cat === catVal;
+
+    return monthMatch && searchMatch && catMatch;
+
+  });
+
+
 
     if (sortSelect.value === "new") {
       res.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -92,18 +106,17 @@ document.addEventListener("DOMContentLoaded", () => {
   sortSelect.addEventListener("change", updateView);
   catSelect.addEventListener("change", updateView);
 
-  monthTabs.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      monthTabs.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      const m = btn.dataset.month;
-            filteredNews =
-              m === "all"
-                ? newsData
-                : newsData.filter(
-                    (x) => x.month?.toLowerCase().trim() === m
-            );
-      renderAnnouncements(filteredNews);
-    });
+monthTabs.forEach((btn) => {
+  btn.addEventListener("click", () => {
+
+    monthTabs.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    activeMonth = btn.dataset.month;
+
+    updateView();
+
   });
+});
+
 });
