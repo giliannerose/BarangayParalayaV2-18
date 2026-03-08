@@ -22,6 +22,10 @@ return{
 }
 }
 
+function goHome(){
+window.open("../index.html", "_blank");
+}
+
 function logout(){
 localStorage.removeItem("token")
 window.location.href="/admin-login.html"
