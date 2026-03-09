@@ -134,13 +134,67 @@ box-shadow:0 2px 10px rgba(0,0,0,0.1);
 
 </div>
 
+<!-- Projects Section -->
+
+<div id="projectsSection" style="display:none;">
+
+<div class="card p-4 mb-4">
+
+<h4>Create Project</h4>
+
+<input id="projectTitle" class="form-control mb-2" placeholder="Project Title">
+
+<textarea id="projectDescription" class="form-control mb-2" placeholder="Description"></textarea>
+
+<select id="projectStatus" class="form-control mb-2">
+<option value="ongoing">Ongoing</option>
+<option value="completed">Completed</option>
+</select>
+
+<input id="projectProgress" class="form-control mb-2" placeholder="Progress (0-100)">
+
+<input id="projectImage" class="form-control mb-2" placeholder="Image URL">
+
+<input id="projectStartDate" class="form-control mb-2" placeholder="Start Date">
+
+<input id="projectEndDate" class="form-control mb-2" placeholder="End Date">
+
+<input id="projectBudget" class="form-control mb-2" placeholder="Budget">
+
+<input id="projectLocation" class="form-control mb-2" placeholder="Location">
+
+<input id="projectLedBy" class="form-control mb-2" placeholder="Led By">
+
+<input id="projectImpact" class="form-control mb-2" placeholder="Impact">
+
+<input id="projectYear" class="form-control mb-3" placeholder="Year">
+
+<button class="btn btn-success" onclick="createProject()">Create</button>
+
 </div>
+
+<div class="card p-4">
+
+<h4>Manage Projects</h4>
+
+<div id="projectList"></div>
 
 </div>
 
 </div>
 
-<script src="dashboard.js"></script>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script src="js/auth.js"></script>
+<script src="js/announcements.js"></script>
+<script src="js/projects.js"></script>
+<script src="js/dashboard.js"></script>
 
 </body>
 </html>
