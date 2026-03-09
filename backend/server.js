@@ -1,5 +1,21 @@
+
 require("dotenv").config();
 const express = require("express");
+
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const multer = require("multer");
+
+const s3 = new S3Client({
+ region: process.env.AWS_REGION,
+ credentials: {
+   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+ }
+});
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -641,4 +657,44 @@ app.delete("/api/about", authenticateToken,  async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+});
+
+//file storage
+
+app.post("/upload", upload.single("file"), async (req, res) => {
+
+ if (!req.file) {
+   return res.status(400).json({ error: "No file uploaded" });
+ }
+
+ const fileName = Date.now() + "-" + req.file.originalname;
+
+ const params = {
+   Bucket: process.env.AWS_BUCKET_NAME,
+   Key: fileName,
+   Body: req.file.buffer,
+   ContentType: req.file.mimetype
+ };
+
+ await s3.send(new PutObjectCommand(params));
+
+ const fileUrl =
+   `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+ res.json({
+   id: fileName,
+   url: fileUrl
+ });
+
+});
+
+
+//
+app.get("/files/:id", (req, res) => {
+
+ const fileUrl =
+   `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${req.params.id}`;
+
+ res.redirect(fileUrl);
+
 });
