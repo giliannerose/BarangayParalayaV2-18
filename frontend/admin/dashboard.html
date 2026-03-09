@@ -63,7 +63,11 @@ box-shadow:0 2px 10px rgba(0,0,0,0.1);
 
 <h3>Admin</h3>
 
-<a href="#" onclick="showSection('announcements')">Announcements</a> <a href="#" onclick="showSection('projects')">Projects</a> <a href="#" onclick="showSection('officials')">Officials</a> <a href="#" onclick="showSection('facilities')">Facilities</a>
+<a href="#" onclick="showSection('announcements')">Announcements</a> 
+<a href="#" onclick="showSection('projects')">Projects</a> 
+<a href="#" onclick="showSection('officials')">Officials</a> 
+<a href="#" onclick="showSection('facilities')">Facilities</a>
+<a href="#" onclick="showSection('bookings')">Bookings</a>
 
 <hr>
 
@@ -223,6 +227,20 @@ box-shadow:0 2px 10px rgba(0,0,0,0.1);
 
 </div>
 
+<!-- BOOKINGS SECTION -->
+
+<div id="bookingsSection" style="display:none;">
+
+<div class="card p-4">
+
+<h4>Manage Bookings</h4>
+
+<div id="bookingList"></div>
+
+</div>
+
+</div>
+
 </div>
 
 </div>
@@ -234,6 +252,7 @@ box-shadow:0 2px 10px rgba(0,0,0,0.1);
 <script src="js/announcements.js"></script>
 <script src="js/projects.js"></script>
 <script src="js/facilities.js"></script>
+<script src="js/bookings.js"></script>
 <script src="js/dashboard.js"></script>
 
 </body>
