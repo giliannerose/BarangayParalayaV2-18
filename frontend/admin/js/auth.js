@@ -22,7 +22,7 @@ return{
 }
 
 function goHome(){
-window.open("../index.html", "_blank");
+  window.open("/", "_blank");
 }
 
 function logout(){

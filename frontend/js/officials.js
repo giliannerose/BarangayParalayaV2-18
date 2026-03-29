@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", fetchOfficials);
 
 async function fetchOfficials() {
-  const res = await fetch("http://localhost:3000/api/officials");
+  const res = await fetch("/api/officials");
   const officials = await res.json();
   renderOfficials(officials);
 }

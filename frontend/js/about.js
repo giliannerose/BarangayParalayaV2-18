@@ -2,7 +2,7 @@
 
 console.log("about.js loaded");
 
-fetch("http://localhost:3000/api/about")
+fetch("/api/about")
   .then(response => response.json())
   .then(data => {
     console.log("About data:", data);
