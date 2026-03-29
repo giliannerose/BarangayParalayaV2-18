@@ -182,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
       col.innerHTML = `
         <div class="card shadow-sm border-0 clickableCard" style="cursor:pointer;">
           <img src="${f.image || 'img/placeholder.jpg'}" class="card-img-top" alt="${f.name}">
+          <div class="card-body text-center">
             <h6 class="card-title text-success fw-semibold">${f.name}</h6>
             <p class="small text-muted">${shortenText(f.description, 80)}</p>
           </div>
@@ -199,12 +200,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const list = document.getElementById("facFeatures");
         list.innerHTML = "";
-        f.features.forEach(feat => {
+        (f.features || []).forEach(feat => {
           const li = document.createElement("li");
           li.textContent = "• " + feat;
           list.appendChild(li);
         });
-
         facModal.show();
       });
 
@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
           class="rounded-circle mx-auto mt-3"
           width="120" height="120"
           alt="${o.name}">
-
+<div class="card-body">
       <h6 class="card-title text-success fw-semibold">${o.name}</h6>
       <p class="small text-muted mb-0">Role: ${o.position}</p>
           </div>

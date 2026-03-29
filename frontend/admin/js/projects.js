@@ -1,41 +1,55 @@
-async function createProject(){
+async function createProject() {
+  const title = document.getElementById("projectTitle").value;
+  const description = document.getElementById("projectDescription").value;
+  const status = document.getElementById("projectStatus").value;
+  const progress = document.getElementById("projectProgress").value;
+  const image = document.getElementById("projectImage").value;
+  const startDate = document.getElementById("projectStartDate").value;
+  const endDate = document.getElementById("projectEndDate").value;
+  const budget = document.getElementById("projectBudget").value;
+  const location = document.getElementById("projectLocation").value;
+  const ledBy = document.getElementById("projectLedBy").value;
+  const impact = document.getElementById("projectImpact").value;
+  const year = document.getElementById("projectYear").value;
 
-const title=document.getElementById("projectTitle").value
-const description=document.getElementById("projectDescription").value
-const status=document.getElementById("projectStatus").value
-const progress=document.getElementById("projectProgress").value
-const image=document.getElementById("projectImage").value
-const startDate=document.getElementById("projectStartDate").value
-const endDate=document.getElementById("projectEndDate").value
-const budget=document.getElementById("projectBudget").value
-const location=document.getElementById("projectLocation").value
-const ledBy=document.getElementById("projectLedBy").value
-const impact=document.getElementById("projectImpact").value
-const year=document.getElementById("projectYear").value
+  try {
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: {
+        ...getAuthHeaders(),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        status,
+        progress: Number(progress),
+        image,
+        startDate,
+        endDate,
+        budget,
+        location,
+        ledBy,
+        impact,
+        year
+      })
+    });
 
-await fetch("/api/projects",{
-method:"POST",
-headers:getAuthHeaders(),
-body:JSON.stringify({
-title,
-description,
-status,
-progress,
-image,
-startDate,
-endDate,
-budget,
-location,
-ledBy,
-impact,
-year
-})
-})
+    const data = await res.json();
+    console.log("CREATE PROJECT RESPONSE:", res.status, data);
 
-alert("Project created")
+    if (!res.ok) {
+      alert(data.message || data.error || "Failed to create project");
+      return;
+    }
 
-loadProjects()
+    alert("Project created");
+    loadProjects();
 
+  } catch (err) {
+    console.error("Create project error:", err);
+    alert("Something went wrong while creating project");
+  }
 }
 
 async function loadProjects(){
@@ -75,15 +89,26 @@ container.appendChild(div)
 
 //delete
 
-async function deleteProject(id){
+async function deleteProject(id) {
+  try {
+    const res = await fetch("/api/projects/" + id, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    });
 
-await fetch("/api/projects/"+id,{
-method:"DELETE",
-headers:getAuthHeaders()
-})
+    const data = await res.json();
+    console.log("DELETE PROJECT RESPONSE:", res.status, data);
 
-alert("Project deleted")
+    if (!res.ok) {
+      alert(data.message || data.error || "Failed to delete project");
+      return;
+    }
 
-loadProjects()
+    alert("Project deleted");
+    loadProjects();
 
+  } catch (err) {
+    console.error("Delete project error:", err);
+    alert("Something went wrong while deleting project");
+  }
 }
