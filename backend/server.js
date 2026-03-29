@@ -1,6 +1,9 @@
 
 require("dotenv").config();
 const express = require("express");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const { body, param, query, validationResult } = require("express-validator");
 
 const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const multer = require("multer");
@@ -13,7 +16,19 @@ const s3 = new S3Client({
  }
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Only JPG, PNG, and WEBP files are allowed"));
+    }
+
+    cb(null, true);
+  }
+});
 
 
 const path = require("path");
@@ -30,7 +45,12 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 // Middleware
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
+app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend")));
@@ -298,9 +318,7 @@ app.get("/auth/callback",
 // JWT AUTH MIDDLEWARE
 
 function authenticateToken(req, res, next) {
-
   const authHeader = req.headers["authorization"];
-
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
@@ -308,18 +326,33 @@ function authenticateToken(req, res, next) {
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-
     if (err) {
-      return res.status(403).json({ message: "Invalid token" });
+      return res.status(401).json({ message: "Invalid or expired token" });
     }
 
     req.user = user;
     next();
-
   });
-
 }
 
+function handleValidationErrors(req, res, next) {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      message: "Validation failed",
+      errors: errors.array()
+    });
+  }
+
+  next();
+}
+
+function asyncHandler(fn) {
+  return function (req, res, next) {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
 
 
 // CRUD ROUTES
@@ -363,13 +396,15 @@ app.get("/api/health", (req, res) => {
 });
 
 // External API: Weather (Open-Meteo) - FETCH LIVE DATA
-app.get("/api/external/weather", async (req, res) => {
-  try {
+app.get(
+  "/api/external/weather",
+  [
+    query("lat").notEmpty().withMessage("lat is required").isFloat().withMessage("lat must be a valid number"),
+    query("lon").notEmpty().withMessage("lon is required").isFloat().withMessage("lon must be a valid number"),
+    handleValidationErrors
+  ],
+  asyncHandler(async (req, res) => {
     const { lat, lon } = req.query;
-
-    if (!lat || !lon) {
-      return res.status(400).json({ error: "lat and lon are required" });
-    }
 
     const url =
       `https://api.open-meteo.com/v1/forecast` +
@@ -379,16 +414,17 @@ app.get("/api/external/weather", async (req, res) => {
       `&timezone=Asia%2FManila`;
 
     const resp = await fetch(url);
+
     if (!resp.ok) {
-      return res.status(502).json({ error: "External API request failed" });
+      const error = new Error("External API request failed");
+      error.status = 502;
+      throw error;
     }
 
     const data = await resp.json();
     res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+  })
+);
 
 // Weather Snapshots CRUD (save API data to DB)
 app.post("/api/weather-snapshots", async (req, res) => {
@@ -454,14 +490,23 @@ app.delete("/api/facilities/:id", authenticateToken, async (req, res) => {
 //booking CRUD
 
 //create
-app.post("/api/bookings", async (req, res) => {
-  try {
+app.post(
+  "/api/bookings",
+  [
+    body("facilityId").notEmpty().withMessage("facilityId is required"),
+    body("fullName").trim().notEmpty().withMessage("Full name is required"),
+    body("email").isEmail().withMessage("Valid email is required"),
+    body("contactNumber").trim().notEmpty().withMessage("Contact number is required"),
+    body("date").trim().notEmpty().withMessage("Date is required"),
+    body("time").trim().notEmpty().withMessage("Time is required"),
+    body("purpose").trim().notEmpty().withMessage("Purpose is required"),
+    handleValidationErrors
+  ],
+  asyncHandler(async (req, res) => {
     const booking = await Booking.create(req.body);
     res.status(201).json(booking);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+  })
+);
 
 //read
 app.get("/api/bookings", async (req, res) => {
@@ -492,14 +537,25 @@ app.put("/api/bookings/:id/status", authenticateToken, async (req, res) => {
 
 //Projects CRUD
 // CREATE project
-app.post("/api/projects", authenticateToken, async (req, res) => {
-  try {
+app.post(
+  "/api/projects",
+  authenticateToken,
+  [
+    body("title").trim().notEmpty().withMessage("Title is required"),
+    body("status")
+      .isIn(["ongoing", "completed"])
+      .withMessage("Status must be either ongoing or completed"),
+    body("progress")
+      .optional()
+      .isInt({ min: 0, max: 100 })
+      .withMessage("Progress must be between 0 and 100"),
+    handleValidationErrors
+  ],
+  asyncHandler(async (req, res) => {
     const project = await Project.create(req.body);
     res.status(201).json(project);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+  })
+);
 
 // READ all projects
 app.get("/api/projects", async (req, res) => {
@@ -655,38 +711,39 @@ app.delete("/api/about", authenticateToken,  async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
-
 //file storage
 
-app.post("/upload", upload.single("file"), async (req, res) => {
+app.post(
+  "/upload",
+  authenticateToken,
+  upload.single("file"),
+  asyncHandler(async (req, res) => {
+    if (!req.file) {
+      const error = new Error("No file uploaded");
+      error.status = 400;
+      throw error;
+    }
 
- if (!req.file) {
-   return res.status(400).json({ error: "No file uploaded" });
- }
+    const fileName = Date.now() + "-" + req.file.originalname;
 
- const fileName = Date.now() + "-" + req.file.originalname;
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileName,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    };
 
- const params = {
-   Bucket: process.env.AWS_BUCKET_NAME,
-   Key: fileName,
-   Body: req.file.buffer,
-   ContentType: req.file.mimetype
- };
+    await s3.send(new PutObjectCommand(params));
 
- await s3.send(new PutObjectCommand(params));
+    const fileUrl =
+      `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
 
- const fileUrl =
-   `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-
- res.json({
-   id: fileName,
-   url: fileUrl
- });
-
-});
+    res.json({
+      id: fileName,
+      url: fileUrl
+    });
+  })
+);
 
 
 //
@@ -698,3 +755,31 @@ app.get("/files/:id", (req, res) => {
  res.redirect(fileUrl);
 
 });
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({
+        message: "File too large. Maximum size is 5MB."
+      });
+    }
+
+    return res.status(400).json({
+      message: err.message
+    });
+  }
+
+  const status = err.status || 500;
+
+  res.status(status).json({
+    message: err.message || "Internal Server Error"
+  });
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
+
