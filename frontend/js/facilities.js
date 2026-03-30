@@ -191,36 +191,6 @@ facilitySelect.addEventListener("change", function () {
 
 loadFacilities();
 
-async function loadBookings() {
-  try {
-    const res = await fetch("/api/bookings");
-    const bookings = await res.json();
-
-    const tbody = document.getElementById("bookingTableBody");
-    tbody.innerHTML = "";
-
-    bookings.forEach(b => {
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td>${b.facilityId?.name || "N/A"}</td>
-        <td>${b.fullName}</td>
-        <td>${b.date}</td>
-        <td>${b.time}</td>
-        <td>${b.purpose}</td>
-        <td>${b.status}</td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-  } catch (err) {
-    console.error("Failed to load bookings", err);
-  }
-}
-
-loadBookings();
-
 
 
 });

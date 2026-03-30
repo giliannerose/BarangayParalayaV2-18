@@ -8,11 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchMonth = document.getElementById("searchMonth");
   const sortSelect = document.getElementById("sort");
   const catSelect = document.getElementById("cat");
-  const monthTabs = document.querySelectorAll("#monthTabs button");
+
 
   let newsData = [];
   let filteredNews = [];
-  let activeMonth = "all";
 
  
   fetch("/api/announcements")
@@ -69,54 +68,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //  filters
-  function updateView() {
-    const searchVal = searchMonth.value.toLowerCase();
-    const catVal = catSelect.value;
+ function updateView() {
+  const searchVal = searchMonth.value.toLowerCase();
+  const catVal = catSelect.value;
 
-     let res = newsData.filter((n) => {
-
-    const monthMatch =
-      activeMonth === "all" ||
-      n.month?.toLowerCase().trim() === activeMonth;
-
+  let res = newsData.filter((n) => {
     const searchMatch =
       (n.month || "").toLowerCase().includes(searchVal) || searchVal === "";
 
     const catMatch =
       catVal === "all" || n.cat === catVal;
 
-    return monthMatch && searchMatch && catMatch;
-
+    return searchMatch && catMatch;
   });
 
-
-
-    if (sortSelect.value === "new") {
-      res.sort((a, b) => new Date(b.date) - new Date(a.date));
-    } else {
-      res.sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
-
-    filteredNews = res;
-    renderAnnouncements(res);
+  if (sortSelect.value === "new") {
+    res.sort((a, b) => new Date(b.date) - new Date(a.date));
+  } else {
+    res.sort((a, b) => new Date(a.date) - new Date(b.date));
   }
+
+  filteredNews = res;
+  renderAnnouncements(res);
+}
 
   // Event listeners
   searchMonth.addEventListener("input", updateView);
   sortSelect.addEventListener("change", updateView);
   catSelect.addEventListener("change", updateView);
 
-monthTabs.forEach((btn) => {
-  btn.addEventListener("click", () => {
-
-    monthTabs.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    activeMonth = btn.dataset.month;
-
-    updateView();
-
-  });
-});
 
 });
