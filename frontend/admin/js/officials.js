@@ -27,6 +27,9 @@ async function loadOfficials() {
       div.innerHTML = `
         <b>${o.name}</b>
         <p>Position: ${o.position}</p>
+        <p>Term: ${o.term || ""}</p>
+        <p>Contact: ${o.contactInfo || ""}</p>
+        <p>Order: ${o.order ?? ""}</p>
         <button onclick="deleteOfficial('${o._id}')">Delete</button>
         <hr>
       `;
@@ -40,19 +43,17 @@ async function loadOfficials() {
 }
 
 async function createOfficial() {
-  const nameInput = document.getElementById("officialName");
-  const positionInput = document.getElementById("officialPosition");
+  const name = document.getElementById("officialName").value.trim();
+  const position = document.getElementById("officialPosition").value.trim();
+  const term = document.getElementById("officialTerm").value.trim();
+  const description = document.getElementById("officialDescription").value.trim();
+  const advocacy = document.getElementById("officialAdvocacy").value.trim();
+  const contactInfo = document.getElementById("officialContactInfo").value.trim();
+  const image = document.getElementById("officialImage").value.trim();
+  const order = parseInt(document.getElementById("officialOrder").value);
 
-  if (!nameInput || !positionInput) {
-    alert("Official form fields not found");
-    return;
-  }
-
-  const name = nameInput.value.trim();
-  const position = positionInput.value.trim();
-
-  if (!name || !position) {
-    alert("Name and position are required");
+  if (!name || !position || !term || !description || !advocacy || !contactInfo || !image || isNaN(order)) {
+    alert("Please fill out all fields");
     return;
   }
 
@@ -63,11 +64,19 @@ async function createOfficial() {
         ...getAuthHeaders(),
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ name, position })
+      body: JSON.stringify({
+        name,
+        position,
+        term,
+        description,
+        advocacy,
+        contactInfo,
+        image,
+        order
+      })
     });
 
     const data = await res.json();
-    console.log("Create official response:", res.status, data);
 
     if (!res.ok) {
       alert(data.message || data.error || "Failed to create official");
@@ -75,8 +84,16 @@ async function createOfficial() {
     }
 
     alert("Official added");
-    nameInput.value = "";
-    positionInput.value = "";
+
+    document.getElementById("officialName").value = "";
+    document.getElementById("officialPosition").value = "";
+    document.getElementById("officialTerm").value = "";
+    document.getElementById("officialDescription").value = "";
+    document.getElementById("officialAdvocacy").value = "";
+    document.getElementById("officialContactInfo").value = "";
+    document.getElementById("officialImage").value = "";
+    document.getElementById("officialOrder").value = "";
+
     loadOfficials();
 
   } catch (err) {
