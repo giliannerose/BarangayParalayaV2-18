@@ -1,37 +1,31 @@
+function showSection(section) {
+  document.getElementById("announcementsSection").style.display = "none";
+  document.getElementById("projectsSection").style.display = "none";
+  document.getElementById("facilitiesSection").style.display = "none";
+  document.getElementById("bookingsSection").style.display = "none";
+  document.getElementById("officialsSection").style.display = "none";
 
+  if (section === "announcements") {
+    document.getElementById("announcementsSection").style.display = "block";
+    loadAnnouncements();
+  }
 
-function showSection(section){
+  if (section === "projects") {
+    document.getElementById("projectsSection").style.display = "block";
+    loadProjects();
+  }
 
-document.getElementById("announcementsSection").style.display="none"
-document.getElementById("projectsSection").style.display="none"
-document.getElementById("facilitiesSection").style.display="none"
-document.getElementById("bookingsSection").style.display="none"
+  if (section === "facilities") {
+    document.getElementById("facilitiesSection").style.display = "block";
+  }
 
-//sections
+  if (section === "bookings") {
+    document.getElementById("bookingsSection").style.display = "block";
+    loadBookings();
+  }
 
-//announcements
-if(section==="announcements"){
-document.getElementById("announcementsSection").style.display="block"
-loadAnnouncements()
+  if (section === "officials") {
+    document.getElementById("officialsSection").style.display = "block";
+    loadOfficials();
+  }
 }
-
-
-//projects
-if(section==="projects"){
-document.getElementById("projectsSection").style.display="block"
-loadProjects()
-}
-
-// facilities
-if(section==="facilities"){
-document.getElementById("facilitiesSection").style.display="block"
-}
-
-// bookings
-if(section==="bookings"){
-document.getElementById("bookingsSection").style.display="block"
-loadBookings()
-}
-
-}
-
